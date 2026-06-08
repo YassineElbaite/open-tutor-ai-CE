@@ -3,8 +3,19 @@ name: Frontend CI
 on:
   push:
     branches: [main, dev]
+    paths:
+      - 'ui/**'
+      - '.github/workflows/ci-frontend.yaml'
   pull_request:
     branches: [main, dev]
+    paths:
+      - 'ui/**'
+      - '.github/workflows/ci-frontend.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
