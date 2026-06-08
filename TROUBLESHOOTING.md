@@ -82,10 +82,10 @@ docker compose -f docker/docker-compose.yaml up --build
 
 ## Slow or timed-out Ollama responses
 
-The default timeout for Ollama responses is 5 minutes (300 seconds). Increase it with:
+The default timeout for Ollama proxy requests is 5 minutes (300 seconds). The backend uses `httpx` for upstream calls — increase the timeout by setting in `.env`:
 
 ```bash
-AIOHTTP_CLIENT_TIMEOUT=600   # seconds, add to .env
+HTTPX_TIMEOUT=600   # seconds
 ```
 
 ---
@@ -134,7 +134,7 @@ The backend serves the built frontend from `ui/build/`. If that directory is mis
 cd ui && npm install && npm run build
 ```
 
-Then restart the backend. In Docker, the build happens automatically in the multi-stage `Dockerfile.backend`.
+Then restart the backend. In Docker, the build happens automatically in the multi-stage `docker/Dockerfile.backend`.
 
 ---
 
