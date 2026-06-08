@@ -90,8 +90,8 @@ async def get_openai_models_map(config: "ProviderConfigService") -> dict:
                 model_id = m.get("id") or m.get("name")
                 if model_id and model_id not in result:
                     result[model_id] = idx
-        except Exception:
-            pass  # skip unreachable upstream
+        except Exception as exc:
+            log.warning("OpenAI upstream unreachable (%s): %s", url, exc)
 
     _OPENAI_MODEL_MAP = result
     _OPENAI_MODEL_MAP_TS = now
@@ -125,8 +125,8 @@ async def get_ollama_models_map(config: "ProviderConfigService") -> dict:
                 name = m.get("model") or m.get("name")
                 if name and name not in result:
                     result[name] = idx
-        except Exception:
-            pass
+        except Exception as exc:
+            log.warning("Ollama upstream unreachable (%s): %s", url, exc)
 
     _OLLAMA_MODEL_MAP = result
     _OLLAMA_MODEL_MAP_TS = now
