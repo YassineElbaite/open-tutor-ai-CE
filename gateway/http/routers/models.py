@@ -1,6 +1,4 @@
-"""Models router — /api/v1/models/*
-Reference: open-webui/backend/open_webui/routers/models.py
-"""
+"""Models router — /api/v1/models/*."""
 
 from typing import Any, Dict
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
@@ -10,7 +8,7 @@ from common.exceptions import AuthorizationError, NotFoundError, ValidationError
 from data.database import get_db
 from data.models import User
 from gateway.http.dependencies import get_current_user
-from models.service import ModelsService
+from ai.model_catalog.service import ModelsService
 
 router = APIRouter(prefix="/models", tags=["models"])
 

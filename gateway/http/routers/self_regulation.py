@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from data.models import User
 from gateway.http.dependencies import get_current_user, get_self_regulation_service
-from self_regulation.service import SelfRegulationService
+from governance.self_regulation.service import SelfRegulationService
 
 router = APIRouter(prefix="/self_regulation", tags=["self_regulation"])
 
@@ -16,7 +16,7 @@ _config: Dict[str, Any] = {}
 
 
 class FeedbackForm(BaseModel):
-    """Flexible feedback payload matching OpenWebUI FeedbackForm convention."""
+    """Flexible feedback payload for HITL self-regulation."""
 
     data: Optional[Dict[str, Any]] = None
     meta: Optional[Dict[str, Any]] = None

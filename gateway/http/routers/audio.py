@@ -1,6 +1,6 @@
 """Audio router — /audio/* matching audio/index.ts UI client.
 
-Admin-only: config read/write (mirrors OpenWebUI pattern — API key stored in config).
+Admin-only: config read/write with API key stored in config.
 Verified user: transcriptions, speech, models, voices.
 """
 

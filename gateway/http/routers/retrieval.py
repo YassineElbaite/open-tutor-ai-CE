@@ -1,6 +1,6 @@
 """Retrieval router — /retrieval/* matching retrieval/index.ts UI client.
 
-Admin-only: config read/write, embedding, reranking, reset (mirrors OpenWebUI pattern).
+Admin-only: config read/write, embedding, reranking, reset.
 Verified user: template, query settings, process/*, query/*.
 """
 
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from data.database import get_db
 from data.models import User
 from gateway.http.dependencies import get_current_user
-from retrieval.service import RetrievalService
+from ai.retrieval.service import RetrievalService
 
 router = APIRouter(prefix="/retrieval", tags=["retrieval"])
 

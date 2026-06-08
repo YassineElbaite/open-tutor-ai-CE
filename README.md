@@ -20,7 +20,7 @@
 
 **OpenTutorAI-CE** (Community Edition) is an open-source project designed to provide an educational and collaborative AI-powered platform. This public edition is the foundation for a proprietary Enterprise Edition (EE) and is built to encourage community contributions.
 
-> [!TIP]  
+> [!TIP]
 
 > **Looking for a Support?** – **[Speak with our support Team Today!](mailto:opentutorai@gmail.com)**
 
@@ -33,35 +33,35 @@ For more information, be sure to check out our [Open TutorAI Documentation](http
 
 Open TutorAI-CE is packed with powerful features designed for educational and collaborative AI experiences. Here's what makes it stand out:
 
-- 🚀 **Effortless Setup with Docker**  
+- 🚀 **Effortless Setup with Docker**
   Set up your environment in minutes using Docker with support for `:ollama` and `:cuda` tagged images, ensuring a streamlined and hassle-free deployment.
 
-- 🤖 **Ollama & OpenAI API Compatibility**  
+- 🤖 **Ollama & OpenAI API Compatibility**
   Easily integrate OpenAI-compatible APIs for flexible conversations. Customize the API endpoint to connect with services like **LMStudio**, **GroqCloud**, **Mistral**, **OpenRouter**, and more—alongside local **Ollama** models.
 
-- 🛡️ **Granular Permissions & User Groups**  
+- 🛡️ **Granular Permissions & User Groups**
   Admins can define detailed roles and permissions, allowing for secure, customized user experiences while promoting accountability and collaboration.
 
-- 🧑‍💻 **Responsive & Mobile-Optimized Design**  
+- 🧑‍💻 **Responsive & Mobile-Optimized Design**
   Enjoy a smooth user experience across desktops, laptops, and mobile devices with a fully responsive interface.
 
-- 📱 **Progressive Web App (PWA) Support**  
+- 📱 **Progressive Web App (PWA) Support**
   Install Open TutorAI on your mobile device for an app-like experience, including **offline mode** on localhost and full access to core functionality.
 
-- 🎤📹 **Voice, Video & Avatar Discussion Mode**  
+- 🎤📹 **Voice, Video & Avatar Discussion Mode**
   Interact hands-free using integrated **voice and video calls**, or dive into an engaging experience with our **avatar-powered discussion mode**—a lifelike conversational interface that brings your AI to life.
 
-- 🧑‍🏫 **Personalized Learning Experience**  
-  Open TutorAI is purpose-built for education:  
-  - 🎓 **Customize learning support** to meet individual learner needs.  
+- 🧑‍🏫 **Personalized Learning Experience**
+  Open TutorAI is purpose-built for education:
+  - 🎓 **Customize learning support** to meet individual learner needs.
   - 🧠 **Generate a personalized LLM**, optionally paired with a user-selected **avatar**, tailored to each learner's style, personality, or curriculum.
 
 - 🛠️ **Model Builder**: Easily create Ollama models. Create and add custom characters/agents, customize chat elements, and import models effortlessly.
 
-- 📚 **Local RAG Integration for Educational Content**  
+- 📚 **Local RAG Integration for Educational Content**
   Empower learners and educators with **Retrieval-Augmented Generation (RAG)** tailored for education. Seamlessly integrate textbooks, lecture notes, assignments, and research papers into the chat experience. Students can load documents directly into the conversation or access classroom resources from their document library using the `#` command—enabling **context-aware tutoring**, **assignment help**, and **in-depth discussion of study material**.
-  
-- 🔍 **Educational Web Search for RAG**  
+
+- 🔍 **Educational Web Search for RAG**
   Enhance learning with real-time **web search integration**. Students and educators can perform targeted research using providers like `Google PSE`, `SearXNG`, `Brave`, `DuckDuckGo`, and more—right from the chat. The search results are automatically injected into the conversation, enabling **fact-checking**, **discovery of up-to-date information**, and **exploration of external academic resources** without leaving the tutoring environment.
 
 - 🌐 **Web Browsing Capability**: Seamlessly integrate websites into your chat experience using the `#` command followed by a URL. This feature allows you to incorporate web content directly into your conversations, enhancing the richness and depth of your interactions.
@@ -88,25 +88,29 @@ Don't forget to explore our sibling project, [Open TutorAI Community](https://di
 open-tutor-ai-CE/
 ├── main.py                    ← Python entry point (uvicorn)
 │
-├── ── Backend ───────────────────────────────────────────────────────────
-├── config/                    ← App settings & constants
-├── common/                    ← Shared utilities (exceptions, logging)
+├── ── Application Domains ───────────────────────────────────────────────
+├── access/                    ← Auth, users, roles, permissions
+├── learning/                  ← Learners, teachers, classrooms, courses
+│   ├── sessions/              ← Chat sessions, tags, sharing, search
+│   └── supports/              ← Personalized tutoring supports
+├── ai/                        ← LLM, providers, retrieval, memory, tools
+│   ├── llm/                   ← LLM schemas, service, transports
+│   ├── model_catalog/         ← Model overlays/catalog
+│   ├── providers/             ← OpenAI-compatible + Ollama providers
+│   └── retrieval/             ← RAG pipeline
+├── content/                   ← Files, uploads, resources, knowledge bases
+├── governance/                ← HITL governance and LLM response evaluation
+│   └── self_regulation/       ← Self-regulation feedback domain
+├── foundation/                ← App-level configs and platform services
+├── media/                     ← Audio (TTS/STT) + image generation
+│
+├── ── Gateway & Infrastructure ──────────────────────────────────────────
 ├── gateway/                   ← Transport layer
 │   ├── http/                  ← FastAPI app, dependencies, routers/
 │   └── realtime/              ← Socket.IO ASGI (/realtime/socket.io)
 ├── data/                      ← ORM models, DB engine, base repository
-├── identity/                  ← Auth & user management
-├── chats/                     ← Chat CRUD, tags, sharing, search
-├── configs/                   ← App config KV store
-├── models/                    ← Model overlays
-├── providers/                 ← LLM providers (OpenAI + Ollama, Hermes-style)
-├── files/                     ← File upload & ownership
-├── knowledge/                 ← Knowledge base
-├── learning/supports/         ← Personalized tutoring supports
-├── self_regulation/           ← HITL feedback
-├── media/                     ← Audio (TTS/STT) + image generation
-├── retrieval/                 ← RAG pipeline
-├── llm/                       ← LLM transport base
+├── config/                    ← App settings & constants
+├── common/                    ← Shared utilities (exceptions, logging)
 ├── tests/                     ← Pytest suite
 │
 ├── ── Frontend ──────────────────────────────────────────────────────────
@@ -328,7 +332,7 @@ docker compose --env-file .env -f devops/docker/docker-compose.yaml -f devops/do
 
 Encountering connection issues? See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common fixes, or visit our [Open TutorAI Documentation](https://opentutorai.com/docs/troubleshooting/). For further assistance, join the [Open TutorAI Discord](https://discord.gg/BTQtE2deEm).
 
-## 🌟 What's Next? 
+## 🌟 What's Next?
 
 Discover upcoming features on our roadmap in the [Open TutorAI Documentation](https://opentutorai.com/docs/roadmap).
 

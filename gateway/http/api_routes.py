@@ -1,8 +1,8 @@
 """Top-level /api/* routes registered directly on the FastAPI app object.
 
 These are called by the UI before authentication (getBackendConfig) and after
-(getModels, getChangelog…).  They follow the OpenWebUI /api/* contract so the
-SvelteKit frontend can bootstrap without modification.
+(getModels, getChangelog). They define the OpenTutorAI bootstrap contract used
+by the SvelteKit frontend.
 
 Usage:
     from gateway.http.api_routes import register_api_routes
@@ -18,14 +18,14 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from config import settings
-from configs.service import ConfigsService
+from foundation.configs.service import ConfigsService
 from data.database import get_db
 from data.models import User
 from gateway.http.dependencies import get_current_user
 from media.images import ImagesService
-from models.service import ModelsService
-from providers.proxy import proxy_json
-from providers.service import ProvidersService, build_llm_body
+from ai.model_catalog.service import ModelsService
+from ai.providers.proxy import proxy_json
+from ai.providers.service import ProvidersService, build_llm_body
 
 log = logging.getLogger(__name__)
 

@@ -8,7 +8,7 @@ from common.exceptions import AuthorizationError, NotFoundError, ValidationError
 from config import settings
 from data.database import get_db
 from data.models import User
-from files.service import FilesService
+from content.files.service import FilesService
 from gateway.http.dependencies import get_current_user
 
 router = APIRouter(prefix="/files", tags=["files"])

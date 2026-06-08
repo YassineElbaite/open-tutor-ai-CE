@@ -1,7 +1,7 @@
 """Providers router — /api/v1/providers/*
 
-Hermes-style core behind an OpenWebUI-compatible shim. This module exposes the exact
-endpoints the inherited UI (ui/src/lib/apis/{openai,ollama}/index.ts) calls.
+Hermes-style provider core behind the OpenTutorAI provider API contract. This
+module exposes the endpoints used by ui/src/lib/apis/{openai,ollama}/index.ts.
 
 Task 1 scope: list + config/urls/keys/verify. Proxy/discovery endpoints are added in
 later tasks (see markers below).
@@ -18,20 +18,20 @@ from sqlalchemy.orm import Session
 from data.database import get_db
 from data.models import User
 from gateway.http.dependencies import get_current_user
-from providers.ollama_native import (
+from ai.providers.ollama_native import (
     pull_model_stream,
     create_model_stream,
     delete_model as ollama_delete_model,
     upload_model_stream,
     UPLOAD_DIR,
 )
-from providers.proxy import (
+from ai.providers.proxy import (
     proxy_json,
     proxy_stream,
     resolve_url_key,
     resolve_ollama_url,
 )
-from providers.service import ProvidersService
+from ai.providers.service import ProvidersService
 
 router = APIRouter(prefix="/providers", tags=["providers"])
 
@@ -272,7 +272,7 @@ async def get_ollama_version(
     if url_idx is not None:
         url = resolve_ollama_url(cfg, url_idx)
         return await proxy_json(url, "", "GET", "api/version")
-    # Fan-out to all backends, return lowest version (mirrors OpenWebUI)
+    # Fan-out to all backends, return the lowest available version.
     results = []
     for url in urls:
         try:

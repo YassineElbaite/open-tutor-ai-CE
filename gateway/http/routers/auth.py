@@ -9,8 +9,8 @@ from jwt import encode
 
 from config import settings
 from data.models import User
-from gateway.http.dependencies import get_current_user, get_identity_service
-from identity.service import IdentityService
+from gateway.http.dependencies import get_access_service, get_current_user
+from access.users.service import AccessService
 
 router = APIRouter(prefix="/auths", tags=["auth"])
 
@@ -82,7 +82,7 @@ async def get_session_user(current_user: User = Depends(get_current_user)):
 @router.post("/signin")
 async def sign_in(
     request: SignInRequest,
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     """Sign in — UI calls /auths/signin."""
     user = svc.authenticate(request.email, request.password)
@@ -100,7 +100,7 @@ async def sign_in(
 @router.post("/login")
 async def login(
     request: SignInRequest,
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     """Login alias — kept for internal/tool use."""
     return await sign_in(request, svc)
@@ -109,7 +109,7 @@ async def login(
 @router.post("/signup")
 async def signup(
     request: SignUpRequest,
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     """Sign up — first user becomes admin."""
     is_admin = svc.count_users() == 0
@@ -134,7 +134,7 @@ async def sign_out(response: Response):
 
 
 @router.get("/user-count")
-async def get_user_count(svc: IdentityService = Depends(get_identity_service)):
+async def get_user_count(svc: AccessService = Depends(get_access_service)):
     return {"count": svc.count_users()}
 
 
@@ -142,7 +142,7 @@ async def get_user_count(svc: IdentityService = Depends(get_identity_service)):
 async def add_user(
     request: AddUserRequest,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     """Admin creates a new user with a specified role."""
     if not current_user.is_admin:
@@ -165,7 +165,7 @@ async def add_user(
 async def update_profile(
     request: UpdateProfileRequest,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     user = svc.update_user(
         current_user.id,
@@ -187,7 +187,7 @@ async def update_profile(
 async def update_password(
     request: UpdatePasswordRequest,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not svc.authenticate(current_user.email, request.password):
         raise HTTPException(status_code=400, detail="Invalid current password")
@@ -318,6 +318,6 @@ async def delete_api_key(current_user: User = Depends(get_current_user)):
 @router.post("/ldap")
 async def ldap_login(
     body: Dict[str, Any],
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     raise HTTPException(status_code=501, detail="LDAP authentication not implemented")

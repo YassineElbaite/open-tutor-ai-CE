@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from data.models import User
-from gateway.http.dependencies import get_current_user, get_identity_service
-from identity.service import IdentityService
+from gateway.http.dependencies import get_access_service, get_current_user
+from access.users.service import AccessService
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -26,7 +26,7 @@ async def get_users(
     skip: int = 0,
     limit: int = 50,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
@@ -36,7 +36,7 @@ async def get_users(
 @router.get("/all")
 async def get_all_users(
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
@@ -51,7 +51,7 @@ async def get_user_groups(current_user: User = Depends(get_current_user)):
 @router.get("/user/settings")
 async def get_settings(
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     return svc.get_user_settings(current_user.id)
 
@@ -60,7 +60,7 @@ async def get_settings(
 async def update_settings(
     body: Dict[str, Any],
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     return svc.update_user_settings(current_user.id, body)
 
@@ -68,7 +68,7 @@ async def update_settings(
 @router.get("/user/info")
 async def get_info(
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     return svc.get_user_info(current_user.id)
 
@@ -77,7 +77,7 @@ async def get_info(
 async def update_info(
     body: Dict[str, Any],
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     return svc.update_user_info(current_user.id, body)
 
@@ -116,7 +116,7 @@ async def update_default_permissions(
 async def update_user_role(
     body: RoleUpdateRequest,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
@@ -132,7 +132,7 @@ async def update_user_role(
 async def get_user(
     user_id: str,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not current_user.is_admin and current_user.id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
@@ -149,7 +149,7 @@ async def update_user(
     user_id: str,
     body: UserUpdateRequest,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not current_user.is_admin and current_user.id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
@@ -166,7 +166,7 @@ async def update_user(
 async def delete_user(
     user_id: str,
     current_user: User = Depends(get_current_user),
-    svc: IdentityService = Depends(get_identity_service),
+    svc: AccessService = Depends(get_access_service),
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")

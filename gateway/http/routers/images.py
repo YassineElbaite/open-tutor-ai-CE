@@ -1,6 +1,6 @@
 """Images router — /images/* matching images/index.ts UI client.
 
-Admin-only: config read/write, url verify, image config, models (mirrors OpenWebUI).
+Admin-only: config read/write, URL verify, image config, models.
 Verified user: generations.
 """
 

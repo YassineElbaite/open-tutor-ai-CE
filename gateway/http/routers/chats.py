@@ -1,13 +1,11 @@
-"""Chats router — /api/v1/chats/*
-Reference: open-webui/backend/open_webui/routers/chats.py
-"""
+"""Chats router — /api/v1/chats/*."""
 
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from chats.service import ChatsService
+from learning.sessions.service import ChatsService
 from common.exceptions import AuthorizationError, NotFoundError
 from data.database import get_db
 from data.models import User
@@ -213,7 +211,7 @@ async def chat_completed(
 ):
     """Record chat completion for analytics/tracking.
 
-    Reference: open-webui/backend/open_webui/routers/chats.py (legacy /api/chat/completed)
+    This keeps completion tracking inside the OpenTutorAI chats namespace.
     """
     # Extract chat_id from body
     chat_id = body.get("chat_id")
@@ -235,7 +233,7 @@ async def chat_action(
 ):
     """Execute a chat action (title generation, summarization, etc.).
 
-    Reference: open-webui/backend/open_webui/routers/chats.py (legacy /api/chat/actions/{action_id})
+    This keeps action execution inside the OpenTutorAI chats namespace.
     """
     # Placeholder - actual action handling depends on action_id
     # Common actions: "generate_title", "summarize", etc.

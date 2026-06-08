@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 from config import settings
 from data.database import get_db
 from data.models import User
-from files.service import FilesService
-from identity.service import IdentityService
+from content.files.service import FilesService
+from access.users.service import AccessService
 from learning.supports.service import SupportsService
-from self_regulation.service import SelfRegulationService
+from governance.self_regulation.service import SelfRegulationService
 
 security = HTTPBearer()
 
@@ -42,7 +42,7 @@ async def get_current_user(
             detail="Invalid authentication credentials",
         )
 
-    user = IdentityService(db).get_user(user_id)
+    user = AccessService(db).get_user(user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
@@ -69,8 +69,8 @@ def decode_jwt_token(token: str) -> dict | None:
 # ── Service factories ─────────────────────────────────────────────────────────
 
 
-def get_identity_service(db: Session = Depends(get_db)) -> IdentityService:
-    return IdentityService(db)
+def get_access_service(db: Session = Depends(get_db)) -> AccessService:
+    return AccessService(db)
 
 
 def get_supports_service(db: Session = Depends(get_db)) -> SupportsService:

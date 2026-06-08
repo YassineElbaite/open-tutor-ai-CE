@@ -2,8 +2,9 @@
 
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from config import settings
@@ -15,7 +16,7 @@ from .routers import (
     supports,
     self_regulation,
     files,
-    platform as platform_router,
+    app_info,
     users,
     configs as configs_router,
     models as models_router,
@@ -86,6 +87,15 @@ def create_app() -> FastAPI:
         allow_headers=settings.CORS_ALLOW_HEADERS,
     )
 
+    @app.middleware("http")
+    async def reject_legacy_realtime_path(request: Request, call_next):
+        if request.url.path.startswith("/ws/socket.io"):
+            return JSONResponse(
+                status_code=404,
+                content={"detail": "Legacy realtime path disabled"},
+            )
+        return await call_next(request)
+
     # Health — no version prefix, matches Docker healthcheck and compose
     app.include_router(health.router)
 
@@ -95,7 +105,6 @@ def create_app() -> FastAPI:
     # Auth — mounted at BOTH paths:
     #   /auths/*        → TUTOR_BASE_URL calls (signup, user-count)
     #   /api/v1/auths/* → TUTOR_API_BASE_URL calls (signin, signout, session, …)
-    # Mirrors the CC pattern where OpenWebUI provided /api/v1/auths separately.
     app.include_router(auth.router)
     app.include_router(auth.router, prefix="/api/v1")
 
@@ -103,7 +112,7 @@ def create_app() -> FastAPI:
     app.include_router(supports.router, prefix="/api/v1")
     app.include_router(self_regulation.router, prefix="/api/v1")
     app.include_router(files.router, prefix="/api/v1")
-    app.include_router(platform_router.router, prefix="/api/v1")
+    app.include_router(app_info.router, prefix="/api/v1")
     app.include_router(users.router, prefix="/api/v1")
     app.include_router(configs_router.router, prefix="/api/v1")
     app.include_router(models_router.router, prefix="/api/v1")

@@ -2,9 +2,7 @@
 
 The client connects to TUTOR_BASE_URL with path='/realtime/socket.io'.
 Authentication is via JWT token passed as `token` query parameter or
-Authorization header (mirrors the OpenWebUI pattern).
-
-Reference: open-webui/backend/open_webui/socket/main.py
+Authorization header.
 """
 
 import logging
@@ -125,10 +123,7 @@ async def disconnect(sid: str):
 
 @sio.on("user-join")
 async def user_join(sid: str, data: dict):
-    """Handle user-join event. Track user in session pool and join user room.
-
-    Reference: open-webui/backend/open_webui/socket/main.py:user_join
-    """
+    """Handle user-join event. Track user in session pool and join user room."""
     auth = data.get("auth")
     if not auth or "token" not in auth:
         return
@@ -162,10 +157,7 @@ async def user_join(sid: str, data: dict):
 
 @sio.on("usage")
 async def usage(sid: str, data: dict):
-    """Handle usage event. Track model usage in USAGE_POOL.
-
-    Reference: open-webui/backend/open_webui/socket/main.py:usage
-    """
+    """Handle usage event. Track model usage in USAGE_POOL."""
     if sid not in SESSION_POOL:
         return
 
@@ -187,10 +179,7 @@ async def usage(sid: str, data: dict):
 
 @sio.on("heartbeat")
 async def heartbeat(sid: str, data: dict):
-    """Handle heartbeat event. Keep session alive and update last_seen_at.
-
-    Reference: open-webui/backend/open_webui/socket/main.py:heartbeat
-    """
+    """Handle heartbeat event. Keep session alive and update last_seen_at."""
     user = SESSION_POOL.get(sid)
     if user:
         SESSION_POOL[sid] = {**user, "last_seen_at": int(time.time())}
@@ -219,10 +208,7 @@ async def emit_channel_event(channel_id: str, data: dict) -> None:
 
 @sio.on("events:chat")
 async def chat_events(sid: str, data: dict):
-    """Handle chat events (e.g., last_read_at).
-
-    Reference: open-webui/backend/open_webui/socket/main.py:chat_events
-    """
+    """Handle chat events, such as last_read_at."""
     user = SESSION_POOL.get(sid)
     if not user:
         return
@@ -241,10 +227,7 @@ async def chat_events(sid: str, data: dict):
 
 @sio.on("events:channel")
 async def channel_events(sid: str, data: dict):
-    """Handle channel events (typing, last_read_at).
-
-    Reference: open-webui/backend/open_webui/socket/main.py:channel_events
-    """
+    """Handle channel events, such as typing and last_read_at."""
     user = SESSION_POOL.get(sid)
     if not user:
         return
