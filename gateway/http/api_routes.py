@@ -9,12 +9,12 @@ Usage:
     register_api_routes(app)
 """
 
-import asyncio
 import json
+import logging
 from typing import Any, Dict
 
 import httpx
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from config import settings
@@ -26,6 +26,8 @@ from media.images import ImagesService
 from models.service import ModelsService
 from providers.proxy import proxy_json
 from providers.service import ProvidersService, build_llm_body
+
+log = logging.getLogger(__name__)
 
 
 # ── Private gateway-layer helper ─────────────────────────────────────────────
@@ -80,12 +82,58 @@ async def _stream_to_socket(
                     try:
                         chunk = json.loads(payload)
                     except Exception:
+                        log.debug("SSE parse error, skipping line: %r", payload)
                         continue
                     await _emit({**chunk, "done": False})
 
         await _emit({"done": True, "id": message_id})
     except Exception as exc:
         await _emit({"error": {"message": str(exc)}, "done": True})
+
+
+async def _chat_completions_handler(
+    body: Dict[str, Any],
+    user: Any,
+    db: Any,
+    background_tasks: BackgroundTasks,
+) -> Any:
+    """Shared handler for both /api/chat/completions endpoints.
+
+    Non-streaming: returns LLM JSON response directly.
+    Streaming: fires a background task that delivers tokens via Socket.IO
+    and returns an immediate acknowledgement to the client.
+    """
+    from gateway.realtime.socket import SESSION_POOL
+
+    model_id: str = body.get("model", "")
+    session_id: str = body.get("session_id", "")
+    chat_id: str = body.get("chat_id", "")
+    message_id: str = body.get("id", "")
+    is_stream: bool = body.get("stream", True)
+
+    base_url, api_key, path = await ProvidersService(db).resolve_provider(model_id)
+
+    llm_body = build_llm_body(body)
+
+    if not is_stream:
+        return await proxy_json(base_url, api_key, "POST", path, body=llm_body)
+
+    # Resolve socket target: prefer session_id lookup, fall back to user.id
+    session_info = SESSION_POOL.get(session_id, {})
+    target_user_id = session_info.get("user_id") or user.id
+
+    background_tasks.add_task(
+        _stream_to_socket,
+        llm_body,
+        base_url,
+        api_key,
+        path,
+        target_user_id,
+        chat_id,
+        message_id,
+    )
+
+    return {"id": message_id, "object": "chat.completion.start", "model": model_id}
 
 
 # ── Route registration ────────────────────────────────────────────────────────
@@ -161,67 +209,25 @@ def register_api_routes(app: FastAPI) -> None:
 
     # ── /api/chat/completions ─────────────────────────────────────────────────
 
-    async def _chat_completions_handler(
-        body: Dict[str, Any],
-        user: User,
-        db: Session,
-    ):
-        """Shared handler for both /api/chat/completions endpoints.
-
-        Non-streaming: returns LLM JSON response directly.
-        Streaming: fires a background task that delivers tokens via Socket.IO
-        and returns an immediate acknowledgement to the client.
-        """
-        from gateway.realtime.socket import SESSION_POOL
-
-        model_id: str = body.get("model", "")
-        session_id: str = body.get("session_id", "")
-        chat_id: str = body.get("chat_id", "")
-        message_id: str = body.get("id", "")
-        is_stream: bool = body.get("stream", True)
-
-        base_url, api_key, path = await ProvidersService(db).resolve_provider(model_id)
-
-        llm_body = build_llm_body(body)
-
-        if not is_stream:
-            return await proxy_json(base_url, api_key, "POST", path, body=llm_body)
-
-        # Resolve socket target: prefer session_id lookup, fall back to user.id
-        session_info = SESSION_POOL.get(session_id, {})
-        target_user_id = session_info.get("user_id") or user.id
-
-        asyncio.create_task(
-            _stream_to_socket(
-                llm_body,
-                base_url,
-                api_key,
-                path,
-                target_user_id,
-                chat_id,
-                message_id,
-            )
-        )
-
-        return {"id": message_id, "object": "chat.completion.start", "model": model_id}
-
     @app.post("/api/chat/completions")
     async def chat_completions(
         body: Dict[str, Any],
+        background_tasks: BackgroundTasks,
         user: User = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
         """Unified chat endpoint — routes to Ollama or OpenAI, streams via Socket.IO."""
-        return await _chat_completions_handler(body, user, db)
+        return await _chat_completions_handler(body, user, db, background_tasks)
 
     @app.post("/api/v1/chat/completions")
     async def chat_completions_v1(
         body: Dict[str, Any],
+        background_tasks: BackgroundTasks,
         user: User = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
         """Alias for /api/chat/completions with /v1 prefix."""
-        return await _chat_completions_handler(body, user, db)
+        return await _chat_completions_handler(body, user, db, background_tasks)
 
     # ── Stub routes ───────────────────────────────────────────────────────────
 
@@ -241,7 +247,7 @@ def register_api_routes(app: FastAPI) -> None:
     def update_model_filter(
         body: Dict[str, Any], user: User = Depends(get_current_user)
     ):
-        return body
+        raise HTTPException(status_code=501, detail="not implemented")
 
     @app.get("/api/config/models")
     def get_models_config(user: User = Depends(get_current_user)):
@@ -251,7 +257,7 @@ def register_api_routes(app: FastAPI) -> None:
     def update_models_config(
         body: Dict[str, Any], user: User = Depends(get_current_user)
     ):
-        return body
+        raise HTTPException(status_code=501, detail="not implemented")
 
     @app.get("/api/webhook")
     def get_webhook(user: User = Depends(get_current_user)):
@@ -271,4 +277,4 @@ def register_api_routes(app: FastAPI) -> None:
 
     @app.post("/api/tasks/stop/{task_id}")
     def stop_task(task_id: str, user: User = Depends(get_current_user)):
-        return {"id": task_id, "stopped": True}
+        return {"stopped": False, "detail": "not implemented"}
